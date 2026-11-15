@@ -18,6 +18,7 @@ const refreshVotes = document.querySelector("#refresh-votes");
 const resultSection = document.querySelector("#result-section");
 const finalPlace = document.querySelector("#final-place");
 const finalVotes = document.querySelector("#final-votes");
+const finalMapLinks = document.querySelector("#final-map-links");
 const placeStatus = document.querySelector("#place-status");
 const backToRoom = document.querySelector("#back-to-room");
 
@@ -62,6 +63,23 @@ function updateControls() {
   refreshVotes.disabled = busy;
 }
 
+function createMapLink(place) {
+  const link = document.createElement("a");
+
+  const coordinates = `${place.lat},${place.lng}`;
+
+  link.href =
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(coordinates);
+
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.className = "place-map-link";
+  link.textContent = `${place.name} 지도 보기 ↗`;
+
+  return link;
+}
+
 // 후보 카드를 처음 표시하거나 투표 저장 후 선택 복원
 function renderCandidates() {
   candidateList.replaceChildren();
@@ -88,7 +106,11 @@ function renderCandidates() {
 
     info.append(name, description);
     label.append(input, info);
-    candidateList.append(label);
+
+    const wrapper = document.createElement("div");
+    wrapper.append(label, createMapLink(candidate));
+
+    candidateList.append(wrapper);
   });
 }
 
@@ -158,6 +180,21 @@ function renderState(data, restoreVote = false) {
     const winners = data.candidates.filter(
       (candidate) => data.winnerIds.includes(candidate.id)
     );
+
+    // 자동 갱신 때 같은 링크를 계속 다시 만들지 않음
+    const winnerKey = JSON.stringify(
+      winners.map((place) => place.id)
+    );
+
+    if (finalMapLinks.dataset.winnerKey !== winnerKey) {
+      finalMapLinks.replaceChildren();
+
+      winners.forEach((place) => {
+        finalMapLinks.append(createMapLink(place));
+      });
+
+      finalMapLinks.dataset.winnerKey = winnerKey;
+    }
 
     if (winners.length === 0) {
       finalPlace.textContent = "선정된 장소가 없습니다.";

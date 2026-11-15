@@ -205,3 +205,31 @@ button:disabled {
 header h1 {
   margin-top: 12px;
 }
+
+.place-map-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 12px;
+  color: #4338ca;
+  background-color: #eef2ff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.place-map-link:hover {
+  background-color: #e0e7ff;
+  text-decoration: underline;
+}
+
+.place-map-link:focus-visible {
+  outline: 3px solid #a5b4fc;
+  outline-offset: 3px;
+}
+
+#final-map-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
