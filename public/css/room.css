@@ -37,7 +37,7 @@
   transform: translateY(calc(-50% - 52vh));
   border-radius: 50%;
   background: var(--accent);
-  opacity: 0.3;
+  opacity: 0.45;
   pointer-events: none;
 }
 
@@ -72,7 +72,7 @@
   height: var(--circle);
   border-radius: 50%;
   background: var(--accent);
-  opacity: 0.3;
+  opacity: 0.45;
   z-index: -1;
   pointer-events: none;
 }
@@ -123,10 +123,10 @@ dialog h2 { font-size: 1.3rem; margin-bottom: 16px; }
 
 /* ---------- 방 화면 ---------- */
 .room {
-  min-height: 100vh;
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 20px 20px 48px;
+  
+  max-width: none;
+  margin: 0;
+  padding: 20px clamp(24px, 5vw, 80px) 48px;
   display: flex;
   flex-direction: column;
 }
@@ -231,3 +231,109 @@ dialog h2 { font-size: 1.3rem; margin-bottom: 16px; }
   text-decoration: none;
 }
 .home-link:hover { color: var(--ink); text-decoration: underline; }
+
+/* 컴퓨터 화면(900px 이상)에서만 적용*/
+@media (min-width: 900px) {
+  .menu { gap: 24px; }
+  .menu a { min-height: 240px; font-size: 1.5rem; }
+  .menu .icon { font-size: 2.6rem; }
+}
+
+/* ---------- 슬라이드 ---------- */
+.carousel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 760px) auto;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+.carousel-viewport {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  transition: height 0.25s ease;
+}
+.carousel-viewport::-webkit-scrollbar { display: none; }
+.slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  padding: 4px;   /* 카드 테두리가 잘리지 않게 */
+}
+
+.arrow {
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+.arrow:hover:not(:disabled) { border-color: var(--ink); }
+.arrow:disabled { opacity: 0.3; cursor: default; }   /* 반투명 */
+
+.dots { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--line);
+  cursor: pointer;
+}
+.dot.active { background: var(--ink); }
+
+.members { margin-top: 56px; }
+
+@media (max-width: 600px) {
+  /* 모바일은 손가락 스와이프로 넘기므로 화살표 숨김, 점은 유지 */
+  .carousel { grid-template-columns: minmax(0, 1fr); }
+  .arrow { display: none; }
+}
+
+/* ---------- 진행 현황 카드 ---------- */
+.progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;   /* 날짜 카드만 길어지고 장소 카드는 그대로 */
+}
+.progress-card {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+.progress-card h3 { font-size: 1rem; margin: 0 0 12px; }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef0f4;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.status-note { margin: 10px 0 0; color: var(--ink-soft); font-size: 0.9rem; }
+
+.date-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.date-pill {
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.place-name { margin: 0; font-size: 1.3rem; font-weight: 800; }
+
+@media (max-width: 600px) {
+  .progress-grid { grid-template-columns: 1fr; }
+}
