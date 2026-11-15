@@ -337,3 +337,26 @@ dialog h2 { font-size: 1.3rem; margin-bottom: 16px; }
 @media (max-width: 600px) {
   .progress-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- 투표 마감 알림 ---------- */
+.menu a { position: relative; }
+.badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 800;
+}
+.badge[hidden] { display: none; }
+
+/* ---------- 진행 현황 제목 링크 ---------- */
+.progress-card h3 a { color: inherit; text-decoration: none; }
+.progress-card h3 a::after { content: " ›"; color: var(--ink-soft); }
+.progress-card h3 a:hover { text-decoration: underline; }
