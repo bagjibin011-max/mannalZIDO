@@ -38,7 +38,7 @@ function updateControls() {
   const canEditOrigin =
     !busy && current?.stage === "origin";
 
-  originSearchForm.querySelectorAll("input, button").forEach(
+  originSearchForm.querySelectorAll("input, select, button").forEach(
     (control) => {
       control.disabled = !canEditOrigin;
     }
@@ -127,9 +127,7 @@ function renderState(data, restoreVote = false) {
   voteSection.hidden = data.stage !== "vote";
   resultSection.hidden = data.stage !== "result";
 
-  const origin = data.originOptions.find(
-    (item) => item.id === data.originId
-  );
+  const origin = data.origin;
 
   // 자동 조회가 입력 중인 검색어를 덮어쓰지 않도록 함
   if (firstLoad && origin) {
@@ -137,7 +135,7 @@ function renderState(data, restoreVote = false) {
   }
 
   originStatus.textContent = origin
-    ? `저장된 출발지: ${origin.name}`
+    ? `저장된 출발지: ${origin.name} · ${origin.address}`
     : "아직 저장한 출발지가 없습니다.";
 
   if (firstLoad || candidatesChanged || restoreVote) {
@@ -248,46 +246,67 @@ originQuery.addEventListener("input", () => {
   updateControls();
 });
 
-originSearchForm.addEventListener("submit", (event) => {
+originSearchForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   if (busy || current?.stage !== "origin") return;
 
-  originResults.replaceChildren();
-
   const keyword = originQuery.value.trim();
 
-  if (!keyword) {
-    searchStatus.textContent = "장소 이름을 입력해주세요.";
+  originResults.replaceChildren();
+
+  if (!keyword || keyword.length > 100) {
+    searchStatus.textContent = "검색어를 1~100자로 입력해주세요.";
     updateControls();
     return;
   }
 
-  const results = current.originOptions.filter(
-    (origin) => origin.name.includes(keyword)
-  );
-
-  searchStatus.textContent =
-    `등록된 목록에서 ${results.length}곳을 찾았습니다.`;
-
-  results.forEach((origin) => {
-    const label = document.createElement("label");
-    label.className = "candidate-card";
-
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "origin";
-    input.value = origin.id;
-    input.required = true;
-
-    const name = document.createElement("span");
-    name.textContent = origin.name;
-
-    label.append(input, name);
-    originResults.append(label);
-  });
-
+  busy = true;
   updateControls();
+  searchStatus.textContent = "검색 중입니다.";
+
+  try {
+    const params = new URLSearchParams({
+      memberId,
+      query: keyword
+    });
+
+    const data = await api(
+      `/api/rooms/${encodeURIComponent(code)}/origin-search?${params}`
+    );
+
+    searchStatus.textContent = data.results.length
+      ? `${data.results.length}곳을 표시합니다. 이름과 주소를 확인해주세요.`
+      : "검색 결과가 없습니다. 다른 장소 이름이나 주소를 입력해주세요.";
+
+    data.results.forEach((origin) => {
+      const label = document.createElement("label");
+      label.className = "candidate-card";
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "origin";
+      input.value = origin.id;
+      input.required = true;
+
+      const info = document.createElement("div");
+
+      const name = document.createElement("strong");
+      name.textContent = origin.name;
+
+      const address = document.createElement("p");
+      address.textContent = origin.address;
+
+      info.append(name, address);
+      label.append(input, info);
+      originResults.append(label);
+    });
+  } catch (error) {
+    searchStatus.textContent = error.message;
+  } finally {
+    busy = false;
+    updateControls();
+  }
 });
 
 originResults.addEventListener("change", updateControls);
