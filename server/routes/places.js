@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const store = require('../store');
 
-const { origins, meetingPlaces } = require('../data/places');
+const { meetingPlaces } = require('../data/places');
+const { searchOrigins } = require('../kakaoSearch');
+const { randomUUID } = require('crypto');
 const { recommendPlaces } = require('../placeRecommendation');
 
 // 장소 API 공통 검사
@@ -37,17 +39,23 @@ function requireMember(req, res, next) {
   // C 담당 데이터는 장소 API에서 초기화
   room.placeStage ??= 'origin';
   room.placeCandidates ??= [];
+  room.originSearches ??= {};
 
   req.room = room;
   req.member = member;
   next();
 }
 
+function isSavedOrigin(origin) {
+  return origin &&
+    typeof origin.name === 'string' &&
+    Number.isFinite(origin.lat) &&
+    Number.isFinite(origin.lng);
+}
+
 function getSavedCount(room) {
   return room.members.filter((member) =>
-    origins.some(
-      (origin) => origin.id === room.origins[member.memberId]
-    )
+    isSavedOrigin(room.origins[member.memberId])
   ).length;
 }
 
@@ -83,15 +91,83 @@ function getPlaceState(room, memberId) {
     totalMembers: room.totalMembers,
     memberCount: room.members.length,
     savedCount: getSavedCount(room),
-    originId: room.origins[memberId] || null,
     candidateId: room.votes[memberId] || null,
-    originOptions: origins.map(({ id, name }) => ({ id, name })),
+    origin: room.origins[memberId] || null,
     candidates: room.placeCandidates,
     counts,
     voteCount,
     winnerIds
   };
 }
+
+// 카카오 출발지 검색
+router.get('/:code/origin-search', requireMember, async (req, res) => {
+  const room = req.room;
+  const memberId = req.member.memberId;
+
+  if (room.placeStage !== 'origin') {
+    return res.status(409).json({
+      error: '추천이 완료되어 출발지를 변경할 수 없습니다.'
+    });
+  }
+
+  const query = typeof req.query.query === 'string'
+    ? req.query.query.trim()
+    : '';
+
+  const type = req.query.type;
+
+  if (!query || query.length > 100) {
+    return res.status(400).json({
+      error: '검색어를 1~100자로 입력해주세요.'
+    });
+  }
+
+  if (!['keyword', 'address'].includes(type)) {
+    return res.status(400).json({
+      error: '검색 종류를 선택해주세요.'
+    });
+  }
+
+  // 같은 참여자의 최신 검색 결과만 사용
+  const search = {
+    results: [],
+    expiresAt: 0
+  };
+
+  room.originSearches[memberId] = search;
+
+  try {
+    const places = await searchOrigins(query, type);
+
+    if (room.placeStage !== 'origin') {
+      return res.status(409).json({
+        error: '검색 중 추천이 완료되었습니다.'
+      });
+    }
+
+    if (room.originSearches[memberId] !== search) {
+      return res.status(409).json({
+        error: '더 최근의 검색이 있습니다. 다시 검색해주세요.'
+      });
+    }
+
+    search.results = places.map((place) => ({
+      ...place,
+      id: randomUUID()
+    }));
+
+    search.expiresAt = Date.now() + 10 * 60 * 1000;
+
+    res.json({
+      results: search.results
+    });
+  } catch (error) {
+    res.status(502).json({
+      error: error.message
+    });
+  }
+});
 
 // 출발지 저장
 router.put('/:code/origin', requireMember, (req, res) => {
@@ -105,13 +181,19 @@ router.put('/:code/origin', requireMember, (req, res) => {
     });
   }
 
-  if (!origins.some((origin) => origin.id === originId)) {
+  const search = room.originSearches[memberId];
+
+  const selectedOrigin = search?.results.find(
+    (origin) => origin.id === originId
+  );
+
+  if (!selectedOrigin || search.expiresAt < Date.now()) {
     return res.status(400).json({
-      error: '올바른 출발지를 선택해주세요.'
+      error: '검색 결과가 만료되었거나 올바르지 않습니다. 다시 검색해주세요.'
     });
   }
 
-  room.origins[memberId] = originId;
+  room.origins[memberId] = { ...selectedOrigin };
 
   const everyoneReady =
     room.members.length === room.totalMembers &&
