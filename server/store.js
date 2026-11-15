@@ -1,9 +1,6 @@
-// 공통 저장소. B, C는 이 파일의 함수를 가져다 쓴다.
-// 지금은 서버 메모리에만 저장 → 서버를 재시작하면 데이터가 사라짐. (JSON 파일 저장은 나중에 추가)
-//
 // 방 구조:
 // {
-//   code, roomName, stage, createdAt,
+//   code, roomName, totalMembers, stage, createdAt,
 //   members:      [{ memberId, name }],
 //   availability: { [memberId]: ["2026-11-20", ...] },
 //   origins:      { [memberId]: "originId" },
@@ -70,10 +67,6 @@ function toPublicRoom(room) {
     code: room.code,
     roomName: room.roomName,
     totalMembers: room.totalMembers,
-    hostMemberId: room.hostMemberId,
-    startDate: room.startDate,
-    endDate: room.endDate,
-    purpose: room.purpose,
     stage: room.stage,
     memberCount: room.members.length,
     members: room.members.map((m) => ({ memberId: m.memberId, name: m.name })),
