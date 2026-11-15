@@ -4,9 +4,11 @@
   const code = getCode();
   const myId = getMemberId(code);
 
-  // B, C 화면으로 연결
+  // 날짜, 장소 화면으로 연결
   document.getElementById('dateLink').href = `/date.html?code=${code}`;
   document.getElementById('placeLink').href = `/place.html?code=${code}`;
+  document.getElementById('dateTitleLink').href = `/date.html?code=${code}`;
+  document.getElementById('placeTitleLink').href = `/place.html?code=${code}`;
 
   // 코드 타일 (한 번만 그림)
   document.getElementById('codeTiles').innerHTML =
@@ -57,8 +59,32 @@
     box.append(el('p', 'status-note', `최다 ${top.count}명 선택 · ${savedCount}명 저장`));
   }
 
+  // 투표 마감 알림: 이 브라우저에서 장소 화면으로 이동하면 "확인함"으로 저장
+  const seenKey = `placeSeen:${code}`;
+  let placeClosed = false;
+
+  function hasSeen() {
+    try { return localStorage.getItem(seenKey) === '1'; } catch { return false; }
+  }
+
+  function markPlaceSeen() {
+    if (!placeClosed) return;
+    try { localStorage.setItem(seenKey, '1'); } catch {}
+  }
+  document.getElementById('placeLink').addEventListener('click', markPlaceSeen);
+  document.getElementById('placeTitleLink').addEventListener('click', markPlaceSeen);
+
+  function updateVoteAlert(closed) {
+    placeClosed = closed;
+    const unseen = closed && !hasSeen();
+    document.getElementById('placeBadge').hidden = !unseen;
+    document.getElementById('placeHint').textContent =
+      !closed ? '출발지 입력 · 투표' : unseen ? '투표 마감 · 결과 보기' : '결과 보기';
+  }
+  
   //places의 stage, candidates, winnerIds 등 가져오기
   function renderPlaceProgress(state) {
+    updateVoteAlert(Boolean(state && state.stage === 'result'));
     const box = document.getElementById('placeProgress');
     box.replaceChildren();
 
