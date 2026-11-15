@@ -115,17 +115,9 @@ router.get('/:code/origin-search', requireMember, async (req, res) => {
     ? req.query.query.trim()
     : '';
 
-  const type = req.query.type;
-
   if (!query || query.length > 100) {
     return res.status(400).json({
       error: '검색어를 1~100자로 입력해주세요.'
-    });
-  }
-
-  if (!['keyword', 'address'].includes(type)) {
-    return res.status(400).json({
-      error: '검색 종류를 선택해주세요.'
     });
   }
 
@@ -138,7 +130,13 @@ router.get('/:code/origin-search', requireMember, async (req, res) => {
   room.originSearches[memberId] = search;
 
   try {
-    const places = await searchOrigins(query, type);
+    // 먼저 장소 이름으로 검색
+    let places = await searchOrigins(query, 'keyword');
+
+    // 검색은 성공했지만 결과가 없을 때만 주소로 검색
+    if (places.length === 0) {
+      places = await searchOrigins(query, 'address');
+    }
 
     if (room.placeStage !== 'origin') {
       return res.status(409).json({
@@ -200,10 +198,8 @@ router.put('/:code/origin', requireMember, (req, res) => {
     getSavedCount(room) === room.totalMembers;
 
   if (everyoneReady) {
-    const selectedOrigins = room.members.map((member) =>
-      origins.find(
-        (origin) => origin.id === room.origins[member.memberId]
-      )
+    const selectedOrigins = room.members.map(
+    (member) => room.origins[member.memberId]
     );
 
     // 같은 출발지를 선택한 사람도 인원수만큼 계산

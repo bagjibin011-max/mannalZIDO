@@ -6,7 +6,6 @@ const searchStatus = document.querySelector("#search-status");
 const originForm = document.querySelector("#origin-form");
 const originSave = document.querySelector("#origin-save");
 const originStatus = document.querySelector("#origin-status");
-const originSearchType = document.querySelector("#origin-search-type");
 
 const voteSection = document.querySelector("#vote-section");
 const voteForm = document.querySelector("#vote-form");
@@ -269,8 +268,7 @@ originSearchForm.addEventListener("submit", async (event) => {
   try {
     const params = new URLSearchParams({
       memberId,
-      query: keyword,
-      type: originSearchType.value
+      query: keyword
     });
 
     const data = await api(
@@ -279,7 +277,7 @@ originSearchForm.addEventListener("submit", async (event) => {
 
     searchStatus.textContent = data.results.length
       ? `${data.results.length}곳을 표시합니다. 이름과 주소를 확인해주세요.`
-      : "검색 결과가 없습니다. 검색 종류나 검색어를 바꿔주세요.";
+      : "검색 결과가 없습니다. 다른 장소 이름이나 주소를 입력해주세요.";
 
     data.results.forEach((origin) => {
       const label = document.createElement("label");
