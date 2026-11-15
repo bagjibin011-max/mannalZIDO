@@ -100,11 +100,18 @@ function renderCandidates() {
     name.textContent = candidate.name;
 
     const description = document.createElement("p");
-    description.textContent =
-      `${candidate.features} ` +
-      `중앙값 기준점과 약 ${candidate.distanceKm.toFixed(1)}km`;
+    description.textContent = candidate.features;
 
-    info.append(name, description);
+    const distanceInfo = document.createElement("p");
+    distanceInfo.textContent =
+      `출발지에서 평균 약 ${candidate.averageDistanceKm.toFixed(1)}km · ` +
+      `가장 먼 출발지에서 약 ${candidate.maxDistanceKm.toFixed(1)}km`;
+
+    const distanceNote = document.createElement("p");
+    distanceNote.textContent =
+      "직선거리 근삿값이며, 실제 이동 거리·시간과 다를 수 있습니다.";
+
+    info.append(name, description, distanceInfo, distanceNote);
     label.append(input, info);
 
     const wrapper = document.createElement("div");

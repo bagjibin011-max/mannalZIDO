@@ -60,4 +60,34 @@ const before = JSON.stringify(places);
 recommendPlaces([{ lat: 37.8, lng: 127 }], places);
 assert.equal(JSON.stringify(places), before);
 
-console.log('장소 추천 계산 테스트 7개 통과');
+// 8. 두 출발지의 평균·최대 거리 확인
+// 같은 경도에서 위도 0.1도 차이는 현재 계산식으로 11.132km
+const distanceResult = recommendPlaces(
+  [
+    { lat: 37.5, lng: 127 },
+    { lat: 37.7, lng: 127 }
+  ],
+  [{ id: 'test', lat: 37.5, lng: 127 }]
+)[0];
+
+assert.ok(
+  Math.abs(distanceResult.averageDistanceKm - 11.132) < 0.001
+);
+
+assert.ok(
+  Math.abs(distanceResult.maxDistanceKm - 22.264) < 0.001
+);
+
+// 9. 모두 후보와 같은 위치라면 거리는 0
+const sameLocation = recommendPlaces(
+  [
+    { lat: 37.5, lng: 127 },
+    { lat: 37.5, lng: 127 }
+  ],
+  [{ id: 'test', lat: 37.5, lng: 127 }]
+)[0];
+
+assert.equal(sameLocation.averageDistanceKm, 0);
+assert.equal(sameLocation.maxDistanceKm, 0);
+
+console.log('장소 추천 계산 테스트 9개 통과');
