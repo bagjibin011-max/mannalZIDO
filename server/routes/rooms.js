@@ -56,4 +56,31 @@ router.post('/:code/members', (req, res) => {
   res.status(201).json({ memberId: member.memberId, name: member.name, code: room.code });
 });
 
+// 저장내역 초기화
+router.post('/:code/reset', (req, res) => {
+  const room = store.getRoom(req.params.code);
+
+  if (!room) {
+    return res.status(404).json({
+      error: '존재하지 않는 방입니다.'
+    });
+  }
+
+  const memberId = req.body?.memberId;
+  const member = store.getMember(room, memberId);
+
+  if (!member) {
+    return res.status(403).json({
+      error: '이 방에 참여한 사용자만 초기화할 수 있습니다.'
+    });
+  }
+
+  store.resetRoomProgress(room);
+
+  res.json({
+    success: true,
+    message: '저장 내역이 초기화되었습니다.'
+  });
+});
+
 module.exports = router;

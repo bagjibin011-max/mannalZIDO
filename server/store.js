@@ -129,4 +129,25 @@ function saveRoomsSync() {
 
 loadRooms();
 
-module.exports = { createRoom, getRoom, getMember, addMember, toPublicRoom, saveRooms, saveRoomsSync };
+// 방의 날짜·장소 조율 데이터 초기화
+function resetRoomProgress(room) {
+  room.availability = {};
+  room.origins = {};
+  room.votes = {};
+
+  room.stage = 'origin';
+  room.placeStage = 'origin';
+  room.placeCandidates = [];
+  room.originSearches = {};
+}
+
+module.exports = {
+  createRoom,
+  getRoom,
+  getMember,
+  addMember,
+  toPublicRoom,
+  resetRoomProgress,
+  saveRooms,
+  saveRoomsSync
+};

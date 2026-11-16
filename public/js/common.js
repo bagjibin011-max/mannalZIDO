@@ -21,16 +21,26 @@ function saveMember(code, memberId, name) {
 // 서버 호출. 실패하면 서버가 준 error 메시지로 Error를 던진다.
 async function api(path, options = {}) {
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    body: options.body
+      ? (typeof options.body === 'string'
+          ? options.body
+          : JSON.stringify(options.body))
+      : undefined,
   });
+
   const data = await res.json().catch(() => ({}));
+
   if (!res.ok) {
     const err = new Error(data.error || '요청에 실패했습니다.');
     err.status = res.status;
     throw err;
   }
+
   return data;
 }
 
