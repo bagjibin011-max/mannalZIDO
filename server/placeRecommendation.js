@@ -53,11 +53,24 @@ function recommendPlaces(origins, places) {
   };
 
   return places
-    .map((place, index) => ({
-      ...place,
-      distanceKm: distanceKm(center, place),
-      originalIndex: index
-    }))
+    .map((place, index) => {
+        const distances = origins.map((origin) =>
+        distanceKm(origin, place)
+        );
+
+        const totalDistance = distances.reduce(
+            (sum, distance) => sum + distance,
+            0
+        );
+
+        return {
+            ...place,
+            distanceKm: distanceKm(center, place),
+            averageDistanceKm: totalDistance / distances.length,
+            maxDistanceKm: Math.max(...distances),
+            originalIndex: index
+        };
+        })
     .sort((a, b) =>
       a.distanceKm - b.distanceKm ||
       a.originalIndex - b.originalIndex
