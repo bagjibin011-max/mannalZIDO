@@ -6,6 +6,7 @@ const { meetingPlaces } = require('../data/places');
 const { searchOrigins } = require('../kakaoSearch');
 const { randomUUID } = require('crypto');
 const { recommendPlaces } = require('../placeRecommendation');
+const { explainPlaces } = require('../geminiPlaces');
 
 // 장소 API 공통 검사
 function requireMember(req, res, next) {
@@ -44,6 +45,24 @@ function requireMember(req, res, next) {
   req.room = room;
   req.member = member;
   next();
+}
+
+// 후보 확정 시 한 번 호출하고, 생성된 설명을 저장
+async function addAiDescriptions(room) {
+  console.log('[장소 AI] 설명 생성 요청');
+
+  try {
+    const candidates = await explainPlaces(room.placeCandidates);
+
+    room.placeCandidates = candidates;
+    console.log('[장소 AI] 설명 생성 완료');
+  } catch (error) {
+    // 실패해도 기존 후보와 기본 설명은 유지
+    console.warn('[장소 AI] 기본 설명 유지:', error.message);
+  }
+
+  // AI 응답은 HTTP 응답이 끝난 뒤 도착할 수 있어 별도로 저장
+  await store.saveRooms();
 }
 
 function isSavedOrigin(origin) {
@@ -210,6 +229,7 @@ router.put('/:code/origin', requireMember, (req, res) => {
 
     room.votes = {};
     room.placeStage = 'vote';
+    void addAiDescriptions(room);
   }
 
   res.json(getPlaceState(room, memberId));

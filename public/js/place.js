@@ -112,6 +112,13 @@ function renderCandidates() {
       "직선거리 근삿값이며, 실제 이동 거리·시간과 다를 수 있습니다.";
 
     info.append(name, description, distanceInfo, distanceNote);
+    const aiDescription = document.createElement("p");
+      aiDescription.dataset.aiCandidateId = candidate.id;
+      aiDescription.textContent = candidate.aiDescription
+        ? `AI 비교 설명: ${candidate.aiDescription}`
+        : "기본 설명으로 비교할 수 있습니다.";
+
+      info.append(aiDescription);
     label.append(input, info);
 
     const wrapper = document.createElement("div");
@@ -148,6 +155,18 @@ function renderState(data, restoreVote = false) {
   if (firstLoad || candidatesChanged || restoreVote) {
     renderCandidates();
   }
+
+  // 자동 조회로 AI 설명만 갱신하여 선택 중인 투표를 유지
+  candidateList.querySelectorAll("[data-ai-candidate-id]")
+    .forEach((element) => {
+      const candidate = data.candidates.find(
+        (item) => item.id === element.dataset.aiCandidateId
+      );
+
+      element.textContent = candidate?.aiDescription
+        ? `AI 비교 설명: ${candidate.aiDescription}`
+        : "기본 설명으로 비교할 수 있습니다.";
+    });
 
   const votedCandidate = data.candidates.find(
     (item) => item.id === data.candidateId
