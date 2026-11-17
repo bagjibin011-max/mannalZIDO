@@ -27,6 +27,8 @@ const memberId = getMemberId(code);
 
 let current = null;
 let busy = false;
+let polling = false;
+let stateVersion = 0;
 
 if (code) {
   backToRoom.href = `/room.html?code=${encodeURIComponent(code)}`;
@@ -239,30 +241,43 @@ function renderState(data, restoreVote = false) {
 }
 
 // 조회와 저장 요청이 겹치지 않도록 하나씩 처리
-async function requestState(path = "votes", body = null) {
-  if (busy || !code || !memberId) return;
+async function requestState(path = "votes", body = null, background = false) {
+  if (busy || !code || !memberId || (background && polling)) return;
 
-  busy = true;
-  updateControls();
+  if (background) {
+    polling = true;
+  } else {
+    stateVersion += 1;
+    busy = true;
+    updateControls();
+  }
+
+  const version = stateVersion;
 
   try {
     const base = `/api/rooms/${encodeURIComponent(code)}/${path}`;
 
     const data = body === null
-      ? await api(
-          `${base}?memberId=${encodeURIComponent(memberId)}`
-        )
+      ? await api(`${base}?memberId=${encodeURIComponent(memberId)}`)
       : await api(base, {
           method: "PUT",
           body: { ...body, memberId }
         });
 
-    renderState(data, body !== null);
+    // 검색이나 저장 전에 시작된 자동 조회가 최신 상태를 덮어쓰지 않게 한다.
+    if (!background || (!busy && version === stateVersion)) {
+      renderState(data, body !== null);
+      updateControls();
+    }
   } catch (error) {
-    placeStatus.textContent = error.message;
+    if (!background) placeStatus.textContent = error.message;
   } finally {
-    busy = false;
-    updateControls();
+    if (background) {
+      polling = false;
+    } else {
+      busy = false;
+      updateControls();
+    }
   }
 }
 
@@ -287,6 +302,7 @@ originSearchForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  stateVersion += 1;
   busy = true;
   updateControls();
   searchStatus.textContent = "검색 중입니다.";
@@ -381,7 +397,7 @@ if (!code || !memberId) {
 
   setInterval(() => {
     if (!document.hidden) {
-      requestState();
+      requestState("votes", null, true);
     }
   }, 4000);
 }
