@@ -360,3 +360,125 @@ dialog h2 { font-size: 1.3rem; margin-bottom: 16px; }
 .progress-card h3 a { color: inherit; text-decoration: none; }
 .progress-card h3 a::after { content: " ›"; color: var(--ink-soft); }
 .progress-card h3 a:hover { text-decoration: underline; }
+
+/* 방 메뉴 */
+.room-menu {
+  position: relative;
+}
+
+.room-menu-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.room-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 165px;
+  padding: 5px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.room-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 9px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: none;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.room-menu-item:hover {
+  background: var(--bg);
+  border-radius: 5px;
+}
+
+.reset-menu-item {
+  border-top: 1px solid var(--line);
+}
+
+/* 초기화 확인 팝업 */
+.reset-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.reset-modal[hidden],
+.room-menu-dropdown[hidden] {
+  display: none;
+}
+
+.reset-modal-content {
+  width: 100%;
+  max-width: 340px;
+  padding: 24px 20px 18px;
+  background: white;
+  border-radius: 13px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.reset-modal-content h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.reset-modal-content p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.reset-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.reset-modal-buttons button {
+  min-width: 85px;
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.reset-modal-buttons #confirmResetBtn {
+  border-color: var(--accent);
+  background: var(--accent);
+  font-weight: 700;
+}
+
+.reset-modal-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

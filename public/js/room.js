@@ -4,6 +4,70 @@
   const code = getCode();
   const myId = getMemberId(code);
 
+  // 방 메뉴 열기 / 닫기
+  const menuBtn = document.getElementById('roomMenuBtn');
+  const menu = document.getElementById('roomMenu');
+
+  menuBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+
+  const isOpen = !menu.hidden;
+  menu.hidden = isOpen;
+  menuBtn.setAttribute('aria-expanded', String(!isOpen));
+  });
+
+  // 메뉴 바깥을 클릭하면 닫기
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+      menu.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // 초기화 팝업 열기
+  const resetBtn = document.getElementById('resetBtn');
+  const resetModal = document.getElementById('resetModal');
+  const cancelResetBtn = document.getElementById('cancelResetBtn');
+  const confirmResetBtn = document.getElementById('confirmResetBtn');
+
+  resetBtn.addEventListener('click', () => {
+    menu.hidden = true;
+    menuBtn.setAttribute('aria-expanded', 'false');
+    resetModal.hidden = false;
+  });
+
+  // 초기화 취소
+  cancelResetBtn.addEventListener('click', () => {
+    resetModal.hidden = true;
+  });
+
+  // 팝업 바깥 클릭 시 닫기
+  resetModal.addEventListener('click', (e) => {
+    if (e.target === resetModal) {
+      resetModal.hidden = true;
+    }
+  });
+
+  // 초기화 실행
+  confirmResetBtn.addEventListener('click', async () => {
+    confirmResetBtn.disabled = true;
+
+    try {
+      await api(`/api/rooms/${code}/reset`, {
+        method: 'POST',
+        body: { memberId: myId }
+      });
+
+      resetModal.hidden = true;
+      alert('저장된 조율 내역이 초기화되었습니다.');
+      location.reload();
+    } catch (error) {
+      alert(error.message || '초기화에 실패했습니다.');
+    } finally {
+      confirmResetBtn.disabled = false;
+    }
+  });
+
   // 날짜, 장소 화면으로 연결
   document.getElementById('dateLink').href = `/date.html?code=${code}`;
   document.getElementById('placeLink').href = `/place.html?code=${code}`;

@@ -6,13 +6,44 @@
   <title>약속 조율 방</title>
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/room.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 <body class = "room-page">
   <main class="room">
         <header class="room-top">
       <div class="count" id="count">👥 0명</div>
       <h1 class="room-title" id="roomName"></h1>
-      <div class="top-right"><a href="/index.html" class="home-link">첫 화면으로</a></div>
+      <div class="top-right">
+        <div class="room-menu">
+          <button
+            type="button"
+            id="roomMenuBtn"
+            class="room-menu-btn"
+            aria-label="방 메뉴"
+            aria-expanded="false"
+          >
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+
+          <div id="roomMenu" class="room-menu-dropdown" hidden>
+            <a href="/index.html" class="room-menu-item">
+              <i class="fa-solid fa-house"></i>
+              첫 화면으로
+            </a>
+
+            <button
+              type="button"
+              id="resetBtn"
+              class="room-menu-item reset-menu-item"
+            >
+              <i class="fa-solid fa-rotate-left"></i>
+              저장내역 초기화
+            </button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <div class="code-box">
@@ -63,6 +94,22 @@
       <h2>참여자</h2>
       <ul id="memberList"></ul>
     </section>
+    <!-- 저장내역 초기화 확인 팝업 -->
+    <div id="resetModal" class="reset-modal" hidden>
+      <div class="reset-modal-content">
+        <h2>저장내역 초기화</h2>
+        <p>
+          저장된 날짜와 장소 관련 진행사항이 모두 삭제됩니다.<br>
+          방과 참여자 정보는 유지되며,<br>
+          초기화한 내용은 다시 복구할 수 없습니다.
+        </p>
+
+        <div class="reset-modal-buttons">
+          <button type="button" id="confirmResetBtn">예</button>
+          <button type="button" id="cancelResetBtn">아니오</button>
+        </div>
+      </div>
+    </div>
   </main>
   <script src="/js/common.js"></script>
   <script src="/js/room.js"></script>
